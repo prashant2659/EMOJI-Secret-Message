@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invisible Emoji Messenger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #e6f7ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        #emojiPicker {
+            background: #ffffff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 620px;
+            height: 200px;
+            overflow-y: scroll;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .emojiButton {
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+            width: 40px;
+            height: 40px;
+        }
+        .emojiButton:hover {
+            background: #d0f0ff;
+            border-radius: 10px;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+        }
+        #searchEmoji, #result, #message {
+            width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Invisible Emoji Messenger</h1>
+
+    <input type="text" id="searchEmoji" placeholder="Search emojis...">
+    <div id="emojiPicker"></div>
+
+    <p id="selectedEmoji">Selected Emoji: None</p>
+
+    <input type="text" id="message" placeholder="Enter secret message">
+    <button onclick="encodeSecret()" style="background-color:#4caf50;color:white;font-weight:bold;">Encode Secret</button>
+
+    <input type="text" id="result" placeholder="Your secret emoji">
+    <button onclick="decodeSecret()" style="background-color:#2196f3;color:white;font-weight:bold;">Decode Secret</button>
+
+    <script>
+        const zeroWidthSpace = '\u200B';
+        const zeroWidthJoiner = '\u200D';
+
+        const emojis = [
+            ["😊", "smile"], ["😂", "laugh"], ["😉", "wink"], ["😍", "love"], ["😘", "kiss"],
+            ["😜", "playful"], ["😝", "mischievous"], ["😎", "cool"], ["🤩", "starstruck"], ["🥰", "affection"],
+            ["😁", "grin"], ["🤗", "hug"], ["😇", "angel"], ["😋", "delicious"], ["🤔", "thinking"],
+            ["🙃", "upside down"], ["🤪", "crazy"], ["😌", "relaxed"], ["😏", "smirk"], ["🥳", "party"],
+            ["😢", "crying"], ["😭", "sobbing"], ["😠", "angry"], ["😡", "furious"], ["🤯", "mind blown"],
+            ["🥶", "freezing"], ["🥵", "hot"], ["🤤", "drooling"], ["😴", "sleeping"], ["🙄", "eyeroll"],
+            ["🧐", "monocle"], ["🤓", "nerdy"], ["😷", "mask"], ["🤒", "sick"], ["😵", "dizzy"],
+            ["💀", "skull"], ["👻", "ghost"], ["🤖", "robot"], ["😺", "cat"], ["👽", "alien"],
+            ["🐶", "dog"], ["🐱", "cat face"], ["🐻", "bear"], ["🐼", "panda"], ["🦄", "unicorn"],
+            ["🐥", "chick"], ["🌈", "rainbow"], ["⚡", "lightning"], ["🔥", "fire"], ["🍩", "donut"],
+            ["🍕", "pizza"], ["🥗", "salad"], ["🎉", "celebration"], ["🎶", "music"], ["❤️", "heart"],
+            ["🧡", "orange heart"], ["💛", "yellow heart"], ["💚", "green heart"], ["💙", "blue heart"],
+            ["💜", "purple heart"], ["🖤", "black heart"], ["🤍", "white heart"], ["🤎", "brown heart"]
+        ];
+
+        let selected = null;
+        let decodedOnce = false;
+
+        function renderEmojis(filter = '') {
+            const picker = document.getElementById('emojiPicker');
+            picker.innerHTML = '';
+            emojis.filter(([emoji, name]) => name.includes(filter.toLowerCase())).forEach(([emoji, name]) => {
+                const button = document.createElement('button');
+                button.textContent = emoji;
+                button.className = 'emojiButton';
+                button.onclick = () => {
+                    selected = emoji;
+                    document.getElementById('selectedEmoji').innerText = 'Selected Emoji: ' + emoji;
+                };
+                picker.appendChild(button);
+            });
+        }
+
+        function encodeSecret() {
+            const message = document.getElementById('message').value;
+            if (!selected || !message) {
+                alert('Please select an emoji and enter a message.');
+                return;
+            }
+            const binary = [...message].map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join('');
+            const hidden = binary.split('').map(bit => bit === '0' ? zeroWidthSpace : zeroWidthJoiner).join('');
+            document.getElementById('result').value = selected + hidden;
+            decodedOnce = false; // Reset decode state
+        }
+
+        function decodeSecret() {
+            const input = document.getElementById('result').value;
+            if (!input || input.length === 0) {
+                alert('Please enter a secret emoji.');
+                return;
+            }
+
+            if (decodedOnce) {
+                alert('This secret has already been revealed and can no longer be viewed.');
+                return;
+            }
+
+            const emojiChar = [...input][0];
+            const hidden = [...input].slice(1).join('');
+
+            let binary = '';
+            for (let c of hidden) {
+                binary += (c === zeroWidthSpace) ? '0' : (c === zeroWidthJoiner ? '1' : '');
+            }
+            let message = '';
+            for (let i = 0; i < binary.length; i += 8) {
+                const byte = binary.slice(i, i + 8);
+                if (byte.length === 8) {
+                    message += String.fromCharCode(parseInt(byte, 2));
+                }
+            }
+            alert('Revealed Message: ' + message);
+            decodedOnce = true;
+            document.getElementById('result').value = emojiChar; // Keep only the emoji after decoding
+        }
+
+        document.getElementById('searchEmoji').addEventListener('input', e => renderEmojis(e.target.value));
+
+        renderEmojis();
+    </script>
+</body>
+</html>
