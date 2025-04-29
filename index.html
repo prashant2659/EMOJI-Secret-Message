@@ -16,16 +16,19 @@
         }
         h1 {
             margin-bottom: 20px;
+            text-align: center;
         }
         #emojiPicker {
             background: #ffffff;
             border: 1px solid #ccc;
             padding: 10px;
-            width: 620px;
+            max-width: 100%;
+            width: 100%;
             height: 200px;
             overflow-y: scroll;
             display: flex;
             flex-wrap: wrap;
+            justify-content: center;
         }
         .emojiButton {
             font-size: 24px;
@@ -44,10 +47,24 @@
             margin: 10px;
             padding: 10px;
             font-size: 16px;
-            width: 300px;
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
         }
         #searchEmoji, #result, #message {
-            width: 600px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        @media (max-width: 768px) {
+            #emojiPicker {
+                height: 150px;
+            }
+            .emojiButton {
+                font-size: 20px;
+                width: 36px;
+                height: 36px;
+            }
         }
     </style>
 </head>
@@ -112,7 +129,7 @@
             const binary = [...message].map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join('');
             const hidden = binary.split('').map(bit => bit === '0' ? zeroWidthSpace : zeroWidthJoiner).join('');
             document.getElementById('result').value = selected + hidden;
-            decodedOnce = false; // Reset decode state
+            decodedOnce = false;
         }
 
         function decodeSecret() {
@@ -143,7 +160,7 @@
             }
             alert('Revealed Message: ' + message);
             decodedOnce = true;
-            document.getElementById('result').value = emojiChar; // Keep only the emoji after decoding
+            document.getElementById('result').value = emojiChar;
         }
 
         document.getElementById('searchEmoji').addEventListener('input', e => renderEmojis(e.target.value));
